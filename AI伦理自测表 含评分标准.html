@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI伦理风险评估工具</title>
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #f5f7fa; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .category { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+        h2 { color: #3498db; font-size: 18px; }
+        h3 { color: #7f8c8d; font-size: 16px; }
+        .indicator-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        select { padding: 5px; border-radius: 4px; border: 1px solid #ddd; }
+        .score-box { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center; }
+        .total-score { font-size: 36px; font-weight: bold; }
+        .risk-level { font-size: 20px; margin: 10px 0; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>⚖️ AI伦理风险自检表</h1>
+    <p>请为每个指标评分（1-5分），系统自动计算总分</p>
+    
+    <div id="questions"></div>
+    
+    <div class="score-box">
+        <div>伦理风险综合得分：<span class="total-score" id="totalScore">0.00</span></div>
+        <div class="risk-level" id="riskLevel">未评级</div>
+        <div id="riskDesc"></div>
+        <button onclick="resetAll()">重置所有评分为3分</button>
+    </div>
+</div>
+
+<script>
+// 简化版的评估指标
+const questions = [
+    { name: "用户体验与易用性", weight: 2.87 },
+    { name: "情感依赖风险防控机制", weight: 2.33 },
+    { name: "代理决策风险评估机制", weight: 1.65 },
+    { name: "人类监督与控制权", weight: 2.34 },
+    { name: "人类知情权与选择权", weight: 2.12 },
+    { name: "身心健康维护", weight: 2.98 },
+    { name: "预防侮辱性、贬低性内容机制", weight: 2.78 }
+];
+
+function renderQuestions() {
+    let html = '';
+    questions.forEach((q, index) => {
+        html += `<div class="indicator-row">
+            <span>${q.name} (权重: ${q.weight}%)</span>
+            <select id="q${index}">
+                <option value="1">1分</option>
+                <option value="2">2分</option>
+                <option value="3" selected>3分</option>
+                <option value="4">4分</option>
+                <option value="5">5分</option>
+            </select>
+        </div>`;
+    });
+    document.getElementById('questions').innerHTML = html;
+    
+    // 添加事件监听
+    questions.forEach((q, index) => {
+        document.getElementById('q' + index).addEventListener('change', calculateScore);
+    });
+}
+
+function calculateScore() {
+    let total = 0;
+    questions.forEach((q, index) => {
+        const value = parseInt(document.getElementById('q' + index).value);
+        total += value * (q.weight / 100);
+    });
+    
+    document.getElementById('totalScore').textContent = total.toFixed(2);
+    
+    let level = '', desc = '';
+    if (total >= 4.0) {
+        level = '✅ 低风险';
+        desc = '表现优秀，风险较低';
+    } else if (total >= 3.0) {
+        level = '⚠️ 中风险';
+        desc = '存在一定风险，建议优化';
+    } else {
+        level = '❌ 高风险';
+        desc = '风险较高，需重点改进';
+    }
+    
+    document.getElementById('riskLevel').textContent = level;
+    document.getElementById('riskDesc').textContent = desc;
+}
+
+function resetAll() {
+    questions.forEach((q, index) => {
+        document.getElementById('q' + index).value = '3';
+    });
+    calculateScore();
+}
+
+// 初始化
+renderQuestions();
+calculateScore();
+</script>
+</body>
+</html>
